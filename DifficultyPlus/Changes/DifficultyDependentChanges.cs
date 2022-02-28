@@ -65,10 +65,23 @@ namespace DifficultyPlus
         CharacterBody VagrantBody = Resources.Load<CharacterBody>("prefabs/characterbodies/VagrantBody");
         #endregion
 
-        void DifficultyDependentChanges()
+        void AmbientLevelDifficulty()
         {
             IL.RoR2.Run.RecalculateDifficultyCoefficentInternal += AmbientLevelChanges;
+        }
+
+        private void DifficultyDependentTeleParticles()
+        {
+            drizzleDesc += $"\n>Teleporter Visuals: <style=cIsHealing>+{Tools.ConvertDecimal(easyTeleParticleRadius / normalTeleParticleRadius - 1)}</style> ";
+            rainstormDesc += $"\n>Teleporter Visuals: +{Tools.ConvertDecimal(normalTeleParticleRadius / normalTeleParticleRadius - 1)}% ";
+            monsoonDesc += $"\n>Teleporter Visuals: <style=cIsHealth>{Tools.ConvertDecimal(1 - hardTeleParticleRadius / normalTeleParticleRadius)}</style> ";
+
             On.RoR2.TeleporterInteraction.BaseTeleporterState.OnEnter += TeleporterParticleScale;
+        }
+
+        private void MonsoonStatBoost()
+        {
+            monsoonDesc += $"\n>Most Enemies have <style=cIsHealth>unique scaling</style></style>";
 
             GiveMonstersMonsoonStatBuffers();
             GiveBossesMonsoonStatBuffers();

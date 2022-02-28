@@ -1,0 +1,50 @@
+﻿using BepInEx.Configuration;
+using R2API;
+using RoR2;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
+
+namespace DifficultyPlus.Items
+{
+    class DisposableScalpel : ItemBase<DisposableScalpel>
+    {
+        public static int bonusDropChance = 50;
+        public override string ItemName => "Medic\u2019s Scalpel";
+
+        public override string ItemLangTokenName => "BOSSITEMCONSUMABLE";
+
+        public override string ItemPickupDesc => "Powerful enemes have a much greater chance of dropping a trophy. Consumed on drop.";
+
+        public override string ItemFullDescription => $"Every <style=cIsDamage>Champion</style> " +
+            $"you kill has an <style=cIsUtility>additional {bonusDropChance}%</style> chance " +
+            $"to drop a <style=cIsDamage>trophy</style>. " +
+            $"Consumes <style=cIsUtility>1</style> stack when a Trophy drops.";
+
+        public override string ItemLore => "";
+
+        public override ItemTier Tier => ItemTier.Tier2;
+
+        public override GameObject ItemModel => Resources.Load<GameObject>("prefabs/NullModel");
+
+        public override Sprite ItemIcon => Resources.Load<Sprite>("textures/miscicons/texWIPIcon");
+
+        public override ItemDisplayRuleDict CreateItemDisplayRules()
+        {
+            return null;
+        }
+
+        public override void Hooks()
+        {
+
+        }
+
+        public override void Init(ConfigFile config)
+        {
+            CreateItem();
+            CreateLang();
+            Hooks();
+        }
+    }
+}

@@ -69,5 +69,15 @@ namespace DifficultyPlus.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] difficultyplusbundle {
+            get {
+                object obj = ResourceManager.GetObject("difficultyplusbundle", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

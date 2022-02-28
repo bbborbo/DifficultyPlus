@@ -15,6 +15,7 @@ namespace DifficultyPlus
     {
         public static float overloadingBombDamage = 1.5f; //0.5f
 
+        public static int Tier2EliteMinimumStageDefault = 5;
         public static int Tier2EliteMinimumStageDrizzle = 10;
         public static int Tier2EliteMinimumStageRainstorm = 5;
         public static int Tier2EliteMinimumStageMonsoon = 3;
@@ -22,10 +23,19 @@ namespace DifficultyPlus
 
         static string Tier2EliteName = "Tier 2";
 
-        void ChangeElites()
+        void ChangeEliteStats()
         {
-            CombatDirector.baseEliteHealthBoostCoefficient = 3f;
-            CombatDirector.baseEliteDamageBoostCoefficient = 1.5f;
+            if(Tier2EliteMinimumStageDrizzle != Tier2EliteMinimumStageDefault 
+                || Tier2EliteMinimumStageMonsoon != Tier2EliteMinimumStageDefault
+                || Tier2EliteMinimumStageEclipse != Tier2EliteMinimumStageDefault)
+            {
+                drizzleDesc += $"\n>{Tier2EliteName} Elites appear starting on <style=cIsHealing>Stage {Tier2EliteMinimumStageDrizzle + 1}</style>";
+                rainstormDesc += $"\n>{Tier2EliteName} Elites appear starting on Stage {Tier2EliteMinimumStageRainstorm + 1}</style></style>";
+                monsoonDesc += $"\n>{Tier2EliteName} Elites appear starting on <style=cIsHealth>Stage {Tier2EliteMinimumStageMonsoon + 1}</style>";
+            }
+
+            CombatDirector.baseEliteHealthBoostCoefficient = 3f; //4
+            CombatDirector.baseEliteDamageBoostCoefficient = 1.5f; //2
             On.RoR2.CombatDirector.Init += EliteTierChanges;
         }
 
@@ -39,8 +49,8 @@ namespace DifficultyPlus
 
                 if (etd.eliteTypes == eliteTypes)
                 {
-                    etd.healthBoostCoefficient = Mathf.Pow(CombatDirector.baseEliteHealthBoostCoefficient, 2);
-                    etd.damageBoostCoefficient = 4.5f;
+                    etd.healthBoostCoefficient = Mathf.Pow(CombatDirector.baseEliteHealthBoostCoefficient, 2); //18
+                    etd.damageBoostCoefficient = 4.5f; //6
 
                     etd.isAvailable = (SpawnCard.EliteRules rules) =>
                     (Run.instance.stageClearCount > Tier2EliteMinimumStageDrizzle && rules == SpawnCard.EliteRules.Default && Run.instance.selectedDifficulty <= DifficultyIndex.Easy)
@@ -51,9 +61,13 @@ namespace DifficultyPlus
             }
         }
 
-        void ChangeEliteBehavior()
+        void BlazingEliteChanges()
         {
-            #region overload
+            On.RoR2.CharacterBody.UpdateFireTrail += BlazingFireTrailChanges;
+        }
+
+        private void OverloadingEliteChanges()
+        {
             //Debug.Log("Modifying Overloading Elite bombs!");
             GameObject overloadingBomb = Resources.Load<GameObject>("Prefabs/Projectiles/LightningStake");
 
@@ -67,11 +81,6 @@ namespace DifficultyPlus
 
             On.RoR2.HealthComponent.TakeDamage += OverloadingKnockbackFix;
             IL.RoR2.GlobalEventManager.OnHitAll += OverloadingBombDamage;
-            #endregion
-
-            #region blazing
-            On.RoR2.CharacterBody.UpdateFireTrail += BlazingFireTrailChanges;
-            #endregion
         }
 
         public static float fireTrailDPS = 0.5f; //1.5f

@@ -2,6 +2,8 @@
 using BepInEx.Configuration;
 using DifficultyPlus.CoreModules;
 using DifficultyPlus.Equipment;
+using DifficultyPlus.Items;
+using DifficultyPlus.Scavengers;
 using R2API;
 using R2API.Utils;
 using RoR2;
@@ -37,7 +39,7 @@ namespace DifficultyPlus
         public const string modName = "DifficultyPLUS";
         public const string version = "0.1.0";
 
-        public static AssetBundle assetBundle = Tools.LoadAssetBundle(Properties.Resources.difficultyplus);
+        public static AssetBundle assetBundle = Tools.LoadAssetBundle(Properties.Resources.difficultyplusbundle);
         public static string assetsPath = "Assets/BorboItemIcons/";
         public static string modelsPath = "Assets/Models/Prefabs/";
         public static string iconsPath = "Assets/Textures/Icons/";
@@ -47,43 +49,139 @@ namespace DifficultyPlus
 
         internal static ConfigFile CustomConfigFile { get; set; }
 
+        public static string drizzleDesc = $"Simplifies difficulty for players new to the game. Weeping and gnashing is replaced by laughter and tickles." +
+                $"<style=cStack>\n\n>Player Health Regeneration: <style=cIsHealing>+50%</style> " +
+                $"\n>Difficulty Scaling: <style=cIsHealing>-50%</style> " +
+                $"\n>Player Damage Reduction: <style=cIsHealing>+38%</style>";
+        public static string rainstormDesc = $"This is the way the game is meant to be played! Test your abilities and skills against formidable foes." +
+                $"<style=cStack>\n\n>Player Health Regeneration: +0% " +
+                $"\n>Difficulty Scaling: +0% ";
+        public static string monsoonDesc = $"For hardcore players. Every bend introduces pain and horrors of the planet. You will die." +
+                $"<style=cStack>\n\n>Player Health Regeneration: <style=cIsHealth>-40%</style> " +
+                $"\n>Difficulty Scaling: <style=cIsHealth>+50%</style>";
+
         void Awake()
         {
             InitializeConfig();
-            //InitializeItems();
+            InitializeItems();
             //InitializeEquipment();
             InitializeEliteEquipment();
-            //InitializeScavengers();
+            InitializeScavengers();
 
-            ChangeElites();
-            ChangeEliteBehavior();
-            DifficultyDependentChanges();
-            FixMoneyAndExpRewards();
+            #region difficulty dependent difficulty
+            //ambient level
+            if (GetConfigBool(true, "Difficulty: Difficulty Dependent Ambient Difficulty Boost"))
+            {
+                AmbientLevelDifficulty();
+                FixMoneyAndExpRewards(); //related to ambient difficulty boost
+            }
 
-            LanguageAPI.Add("DIFFICULTY_EASY_DESCRIPTION", $"Simplifies difficulty for players new to the game. Weeping and gnashing is replaced by laughter and tickles." +
-                $"<style=cStack>\n\n>Player Health Regeneration: <style=cIsHealing>+50%</style> " +
-                $"\n>Difficulty Scaling: <style=cIsHealing>-50%</style> " +
-                $"\n>Teleporter Visuals: <style=cIsHealing>+{Tools.ConvertDecimal(easyTeleParticleRadius / normalTeleParticleRadius - 1)}</style> " +
-                $"\n>{Tier2EliteName} Elites appear starting on <style=cIsHealing>Stage {Tier2EliteMinimumStageDrizzle + 1}</style> " +
-                $"\n>Player Damage Reduction: <style=cIsHealing>+38%</style></style>");
+            //elite stats
+            if (GetConfigBool(true, "Elite: Elite Stats and Ocurrences"))
+            {
+                ChangeEliteStats();
+            }
+
+            //teleporter particle
+            if (GetConfigBool(true, "Difficulty: Teleporter Particle Radius"))
+            {
+                DifficultyDependentTeleParticles();
+            }
+
+            //monsoon stat boost
+            if (GetConfigBool(true, "Difficulty: Monsoon Stat Booster"))
+            {
+                MonsoonStatBoost();
+            }
+            #endregion
+
+            #region packets
+            //economy
+
+            // boss item drop
+            if (GetConfigBool(true, "Boss: Boss Item Drops"))
+            {
+                BossesDropBossItems();
+                DirectorAPI.Helpers.RemoveExistingInteractable(DirectorAPI.Helpers.InteractableNames.OvergrownPrinter);
+            }
+
+            //overloading elite
+            if (GetConfigBool(true, "Elite: Overloading Elite Rework"))
+            {
+                OverloadingEliteChanges();
+            }
+
+            //blazing elite
+            //BlazingEliteChanges();
+
+            //newt shrine
+            if (GetConfigBool(true, "Lunar: Newt Shrine"))
+            {
+                NerfBazaarStuff();
+            }
+
+            On.RoR2.Run.BeginStage += GetChestCostForStage;
+
+            if (GetConfigBool(true, "Economy: Gold Gain and Chest Scaling"))
+            {
+                FixMoneyScaling();
+            }
+
+            //elite gold
+            if (GetConfigBool(true, "Economy: Elite Gold Rewards"))
+            {
+                EliteGoldReward();
+            }
+
+            //printer
+            if (GetConfigBool(true, "Economy: Printer"))
+            {
+                DirectorAPI.InteractableActions += PrinterOccurrenceHook;
+            }
+
+            //scrapper
+            if (GetConfigBool(true, "Economy: Scrapper"))
+            {
+                DirectorAPI.InteractableActions += ScrapperOccurrenceHook;
+            }
+
+            //equipment barrels and shops
+            if (GetConfigBool(true, "Economy: Equipment Barrel/Shop"))
+            {
+                DirectorAPI.InteractableActions += EquipBarrelOccurrenceHook;
+            }
+
+            //blood shrine
+            if (GetConfigBool(true, "Economy: Blood Shrine"))
+            {
+                BloodShrineRewardRework();
+            }
+            #endregion
+
+            LanguageAPI.Add("DIFFICULTY_EASY_DESCRIPTION", drizzleDesc + "</style>");
             // " + $"\n>Most Bosses have <style=cIsHealing>reduced skill sets</style>
 
-            LanguageAPI.Add("DIFFICULTY_NORMAL_DESCRIPTION", $"This is the way the game is meant to be played! Test your abilities and skills against formidable foes." +
-                $"<style=cStack>\n\n>Player Health Regeneration: +0% " +
-                $"\n>Difficulty Scaling: +0% " +
-                $"\n>Teleporter Visuals: +0% " +
-                $"\n>{Tier2EliteName} Elites appear starting on Stage {Tier2EliteMinimumStageRainstorm + 1}</style></style>");
+            LanguageAPI.Add("DIFFICULTY_NORMAL_DESCRIPTION", rainstormDesc + "</style>");
 
-            LanguageAPI.Add("DIFFICULTY_HARD_DESCRIPTION", $"For hardcore players. Every bend introduces pain and horrors of the planet. You will die." +
-                $"<style=cStack>\n\n>Player Health Regeneration: <style=cIsHealth>-40%</style> " +
-                $"\n>Difficulty Scaling: <style=cIsHealth>+50%</style>" +
-                $"\n>Teleporter Visuals: <style=cIsHealth>{Tools.ConvertDecimal(1 - hardTeleParticleRadius / normalTeleParticleRadius)}</style> " +
-                $"\n>{Tier2EliteName} Elites appear starting on <style=cIsHealth>Stage {Tier2EliteMinimumStageMonsoon + 1}</style>" +
-                $"\n>Most Enemies have <style=cIsHealth>unique scaling</style></style>");
+            LanguageAPI.Add("DIFFICULTY_HARD_DESCRIPTION", monsoonDesc + "</style>");
 
             InitializeCoreModules();
             new ContentPacks().Initialize();
         }
+
+        private bool GetConfigBool(bool defaultValue, string entryName, string desc = "")
+        {
+            if (desc != "")
+            {
+                return CustomConfigFile.Bind<bool>("DifficultyPlus Packets - See README For Details.",
+                    entryName + "Packet", defaultValue,
+                    $"The changes in this Packet will be enabled if set to true.").Value;
+            }
+            return CustomConfigFile.Bind<bool>("DifficultyPlus Packets",
+                entryName + " Packet", defaultValue,
+                "(The following changes will be enabled if set to true) " + desc).Value;
+        }
+
         private void InitializeConfig()
         {
             CustomConfigFile = new ConfigFile(Paths.ConfigPath + $"\\{modName}.cfg", true);
@@ -103,7 +201,7 @@ namespace DifficultyPlus
         }
         #region twisted scavs
 
-        /*public List<TwistedScavengerBase> Scavs = new List<TwistedScavengerBase>();
+        public List<TwistedScavengerBase> Scavs = new List<TwistedScavengerBase>();
         public static Dictionary<TwistedScavengerBase, bool> ScavStatusDictionary = new Dictionary<TwistedScavengerBase, bool>();
         private void InitializeScavengers()
         {
@@ -127,20 +225,8 @@ namespace DifficultyPlus
 
         bool ValidateScav(TwistedScavengerBase scav, List<TwistedScavengerBase> scavList)
         {
-            BalanceCategory category = scav.Category;
-
-            bool enabled = true;
-
-            if (category != BalanceCategory.None && category != BalanceCategory.Count)
-            {
-                string name = scav.ScavName.Replace("'", "");
-                enabled = IsCategoryEnabled(category) &&
-                CustomConfigFile.Bind<bool>(category.ToString(), $"Enable Twisted Scavenger: {name}", true, "Should this scavenger appear in A Moment, Whole?").Value;
-            }
-            else
-            {
-                Debug.Log($"{scav.ScavLangTokenName} initializing into Balance Category: {category}!!");
-            }
+            bool enabled = 
+                CustomConfigFile.Bind<bool>("Twisted Scavengers", $"Enable Twisted Scavenger: {scav.ScavName} the {scav.ScavTitle}", true, "Should this scavenger appear in A Moment, Whole?").Value;
 
             //ItemStatusDictionary.Add(item, itemEnabled);
 
@@ -149,12 +235,12 @@ namespace DifficultyPlus
                 scavList.Add(scav);
             }
             return enabled;
-        }*/
+        }
         #endregion
 
         #region items
 
-        /*public List<ItemBase> Items = new List<ItemBase>();
+        public List<ItemBase> Items = new List<ItemBase>();
         public static Dictionary<ItemBase, bool> ItemStatusDictionary = new Dictionary<ItemBase, bool>();
 
         void InitializeItems()
@@ -164,35 +250,27 @@ namespace DifficultyPlus
             foreach (var itemType in ItemTypes)
             {
                 ItemBase item = (ItemBase)System.Activator.CreateInstance(itemType);
-                if (item.IsHidden)
-                    return;
-
-                if (ValidateItem(item, Items))
+                if (!item.IsHidden)
                 {
-                    item.Init(CustomConfigFile);
-                }
-                else
-                {
-                    Debug.Log("Item: " + item.ItemName + " Did not initialize!");
+                    if (ValidateItem(item, Items))
+                    {
+                        item.Init(CustomConfigFile);
+                    }
+                    else
+                    {
+                        Debug.Log("Item: " + item.ItemName + " Did not initialize!");
+                    }
                 }
             }
         }
 
         bool ValidateItem(ItemBase item, List<ItemBase> itemList)
         {
-            BalanceCategory category = item.Category;
+            bool itemEnabled = item.Tier == ItemTier.NoTier;
 
-            var itemEnabled = true;
-
-            if (category != BalanceCategory.None && category != BalanceCategory.Count)
+            if (!itemEnabled)
             {
-                string name = item.ItemName.Replace("'", "");
-                itemEnabled = IsCategoryEnabled(category) &&
-                CustomConfigFile.Bind<bool>(category.ToString(), $"Enable Item: {name}", true, "Should this item appear in runs?").Value;
-            }
-            else
-            {
-                Debug.Log($"{item.ItemName} item initializing into Balance Category: {category}!!");
+                itemEnabled = CustomConfigFile.Bind<bool>("Items", $"Enable Item: {item.ItemName}", true, "Should this item appear in runs?").Value;
             }
 
             //ItemStatusDictionary.Add(item, itemEnabled);
@@ -202,53 +280,10 @@ namespace DifficultyPlus
                 itemList.Add(item);
             }
             return itemEnabled;
-        }*/
+        }
         #endregion
 
         #region equips
-
-       /* public List<EquipmentBase> Equipments = new List<EquipmentBase>();
-        public static Dictionary<EquipmentBase, bool> EquipmentStatusDictionary = new Dictionary<EquipmentBase, bool>();
-        void InitializeEquipment()
-        {
-            var EquipmentTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(EquipmentBase)));
-
-            foreach (var equipmentType in EquipmentTypes)
-            {
-                EquipmentBase equipment = (EquipmentBase)System.Activator.CreateInstance(equipmentType);
-                if (equipment.IsHidden)
-                    return;
-
-                if (ValidateEquipment(equipment, Equipments))
-                {
-                    equipment.Init(Config);
-                }
-            }
-        }
-        public bool ValidateEquipment(EquipmentBase equipment, List<EquipmentBase> equipmentList)
-        {
-            BalanceCategory category = equipment.Category;
-
-            var itemEnabled = true;
-
-            if (category != BalanceCategory.None && category != BalanceCategory.Count)
-            {
-                itemEnabled = IsCategoryEnabled(category) &&
-                CustomConfigFile.Bind<bool>(category.ToString(), "Enable Equipment: " + equipment.EquipmentName, true, "Should this item appear in runs?").Value;
-            }
-            else
-            {
-                Debug.Log($"{equipment.EquipmentName} equipment initializing into Balance Category: {category}!!");
-            }
-
-            EquipmentStatusDictionary.Add(equipment, itemEnabled);
-
-            if (itemEnabled)
-            {
-                equipmentList.Add(equipment);
-            }
-            return itemEnabled;
-        }*/
 
         public static List<EquipmentDef> EliteEquipments = new List<EquipmentDef>();
         public static Dictionary<EliteEquipmentBase, bool> EliteEquipmentStatusDictionary = new Dictionary<EliteEquipmentBase, bool>();
@@ -269,12 +304,55 @@ namespace DifficultyPlus
         }
         public bool ValidateEliteEquipment(EliteEquipmentBase equipment)
         {
-            var itemEnabled = 
-                CustomConfigFile.Bind<bool>("Equipment", "Enable Equipment: " + equipment.EliteEquipmentName, true, "Should this item appear in runs?").Value;
+            var itemEnabled =
+                CustomConfigFile.Bind<bool>("Elite Aspects", $"Enable Aspect: {equipment.EliteEquipmentName} ({equipment.EliteModifier} Elite)" , true, "Should these elites appear in runs?").Value;
 
             EliteEquipmentStatusDictionary.Add(equipment, itemEnabled);
             return itemEnabled;
         }
+
+        /* public List<EquipmentBase> Equipments = new List<EquipmentBase>();
+         public static Dictionary<EquipmentBase, bool> EquipmentStatusDictionary = new Dictionary<EquipmentBase, bool>();
+         void InitializeEquipment()
+         {
+             var EquipmentTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(EquipmentBase)));
+
+             foreach (var equipmentType in EquipmentTypes)
+             {
+                 EquipmentBase equipment = (EquipmentBase)System.Activator.CreateInstance(equipmentType);
+                 if (equipment.IsHidden)
+                     return;
+
+                 if (ValidateEquipment(equipment, Equipments))
+                 {
+                     equipment.Init(Config);
+                 }
+             }
+         }
+         public bool ValidateEquipment(EquipmentBase equipment, List<EquipmentBase> equipmentList)
+         {
+             BalanceCategory category = equipment.Category;
+
+             var itemEnabled = true;
+
+             if (category != BalanceCategory.None && category != BalanceCategory.Count)
+             {
+                 itemEnabled = IsCategoryEnabled(category) &&
+                 CustomConfigFile.Bind<bool>(category.ToString(), "Enable Equipment: " + equipment.EquipmentName, true, "Should this item appear in runs?").Value;
+             }
+             else
+             {
+                 Debug.Log($"{equipment.EquipmentName} equipment initializing into Balance Category: {category}!!");
+             }
+
+             EquipmentStatusDictionary.Add(equipment, itemEnabled);
+
+             if (itemEnabled)
+             {
+                 equipmentList.Add(equipment);
+             }
+             return itemEnabled;
+         }*/
         #endregion
     }
 }

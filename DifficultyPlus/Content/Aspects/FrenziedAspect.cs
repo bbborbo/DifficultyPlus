@@ -83,7 +83,7 @@ namespace DifficultyPlus.Equipment
             if (IsElite(sender, EliteBuffDef))
             {
                 args.moveSpeedMultAdd += 0.5f;
-                args.baseAttackSpeedAdd += 1f;
+                args.baseAttackSpeedAdd += 0.8f;
             }
         }
 

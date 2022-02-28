@@ -5,10 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="difficultyplusbundle" />
     <None Remove="Resources\difficultyplus" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\difficultyplusbundle" />
     <EmbeddedResource Include="Resources\difficultyplus" />
   </ItemGroup>
 
