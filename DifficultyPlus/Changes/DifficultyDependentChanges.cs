@@ -30,39 +30,39 @@ namespace DifficultyPlus
 
         #region all enemies
         //enemies
-        CharacterBody VultureBody = Resources.Load<CharacterBody>("prefabs/characterbodies/VultureBody");
-        CharacterBody BeetleBody = Resources.Load<CharacterBody>("prefabs/characterbodies/BeetleBody");
-        CharacterBody BeetleGuardBody = Resources.Load<CharacterBody>("prefabs/characterbodies/BeetleGuardBody");
-        CharacterBody BisonBody = Resources.Load<CharacterBody>("prefabs/characterbodies/BisonBody");
-        CharacterBody BellBody = Resources.Load<CharacterBody>("prefabs/characterbodies/BellBody");
-        CharacterBody ClayTemplarBody = Resources.Load<CharacterBody>("prefabs/characterbodies/ClayBruiserBody");
-        CharacterBody ElderLemurianBody = Resources.Load<CharacterBody>("prefabs/characterbodies/LemurianBruiserBody");
-        CharacterBody GreaterWispBody = Resources.Load<CharacterBody>("prefabs/characterbodies/GreaterWispBody");
-        CharacterBody HermitCrabBody = Resources.Load<CharacterBody>("prefabs/characterbodies/HermitCrabBody");
-        CharacterBody ImpBody = Resources.Load<CharacterBody>("prefabs/characterbodies/ImpBody");
-        CharacterBody JellyfishBody = Resources.Load<CharacterBody>("prefabs/characterbodies/JellyfishBody");
-        CharacterBody LemurianBody = Resources.Load<CharacterBody>("prefabs/characterbodies/LemurianBody");
-        CharacterBody LesserWispBody = Resources.Load<CharacterBody>("prefabs/characterbodies/WispBody");
-        CharacterBody LunarExploderBody = Resources.Load<CharacterBody>("prefabs/characterbodies/LunarExploderBody");
-        CharacterBody LunarGolemBody = Resources.Load<CharacterBody>("prefabs/characterbodies/LunarGolemBody");
-        CharacterBody LunarWispBody = Resources.Load<CharacterBody>("prefabs/characterbodies/LunarWispBody");
-        CharacterBody MiniMushroomBody = Resources.Load<CharacterBody>("prefabs/characterbodies/MiniMushroomBody");
-        CharacterBody ParentBody = Resources.Load<CharacterBody>("prefabs/characterbodies/ParentBody");
-        CharacterBody SolusProbeBody = Resources.Load<CharacterBody>("prefabs/characterbodies/RoboBallMiniBody");
-        CharacterBody StoneGolemBody = Resources.Load<CharacterBody>("prefabs/characterbodies/GolemBody");
-        CharacterBody VoidReaverBody = Resources.Load<CharacterBody>("prefabs/characterbodies/NullifierBody");
+        CharacterBody VultureBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/VultureBody");
+        CharacterBody BeetleBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/BeetleBody");
+        CharacterBody BeetleGuardBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/BeetleGuardBody");
+        CharacterBody BisonBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/BisonBody");
+        CharacterBody BellBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/BellBody");
+        CharacterBody ClayTemplarBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/ClayBruiserBody");
+        CharacterBody ElderLemurianBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/LemurianBruiserBody");
+        CharacterBody GreaterWispBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/GreaterWispBody");
+        CharacterBody HermitCrabBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/HermitCrabBody");
+        CharacterBody ImpBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/ImpBody");
+        CharacterBody JellyfishBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/JellyfishBody");
+        CharacterBody LemurianBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/LemurianBody");
+        CharacterBody LesserWispBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/WispBody");
+        CharacterBody LunarExploderBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/LunarExploderBody");
+        CharacterBody LunarGolemBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/LunarGolemBody");
+        CharacterBody LunarWispBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/LunarWispBody");
+        CharacterBody MiniMushroomBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/MiniMushroomBody");
+        CharacterBody ParentBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/ParentBody");
+        CharacterBody SolusProbeBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/RoboBallMiniBody");
+        CharacterBody StoneGolemBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/GolemBody");
+        CharacterBody VoidReaverBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/NullifierBody");
 
         //bosses
-        CharacterBody BeetleQueenBody = Resources.Load<CharacterBody>("prefabs/characterbodies/BeetleQueen2Body");
-        CharacterBody ClayBossBody = Resources.Load<CharacterBody>("prefabs/characterbodies/ClayBossBody");
-        CharacterBody GrandParentBody = Resources.Load<CharacterBody>("prefabs/characterbodies/GrandParentBody");
-        CharacterBody GrovetenderBody = Resources.Load<CharacterBody>("prefabs/characterbodies/GravekeeperBody");
-        CharacterBody ImpBossBody = Resources.Load<CharacterBody>("prefabs/characterbodies/ImpBossBody");
-        CharacterBody MagmaWormBody = Resources.Load<CharacterBody>("prefabs/characterbodies/MagmaWormBody");
-        CharacterBody ScavBody = Resources.Load<CharacterBody>("prefabs/characterbodies/ScavBody");
-        CharacterBody SolusControlUnitBody = Resources.Load<CharacterBody>("prefabs/characterbodies/RoboBallBossBody");
-        CharacterBody StoneTitanBody = Resources.Load<CharacterBody>("prefabs/characterbodies/TitanBody");
-        CharacterBody VagrantBody = Resources.Load<CharacterBody>("prefabs/characterbodies/VagrantBody");
+        CharacterBody BeetleQueenBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/BeetleQueen2Body");
+        CharacterBody ClayBossBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/ClayBossBody");
+        CharacterBody GrandParentBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/GrandParentBody");
+        CharacterBody GrovetenderBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/GravekeeperBody");
+        CharacterBody ImpBossBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/ImpBossBody");
+        CharacterBody MagmaWormBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/MagmaWormBody");
+        CharacterBody ScavBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/ScavBody");
+        CharacterBody SolusControlUnitBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/RoboBallBossBody");
+        CharacterBody StoneTitanBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/TitanBody");
+        CharacterBody VagrantBody = LegacyResourcesAPI.Load<CharacterBody>("prefabs/characterbodies/VagrantBody");
         #endregion
 
         void AmbientLevelDifficulty()

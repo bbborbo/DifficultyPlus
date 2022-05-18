@@ -65,8 +65,35 @@ namespace DifficultyPlus.CoreModules
 
         public override void Init()
         {
+            AddTrophyHunterDebuffs();
+
             IL.RoR2.HealthComponent.TakeDamage += AddExecutionThreshold;
             On.RoR2.HealthComponent.GetHealthBarValues += DisplayExecutionThreshold;
+        }
+
+        public static BuffDef bossHunterDebuff;
+        public static BuffDef bossHunterDebuffWithScalpel;
+        private void AddTrophyHunterDebuffs()
+        {
+            bossHunterDebuff = ScriptableObject.CreateInstance<BuffDef>();
+
+            bossHunterDebuff.buffColor = new Color(0.2f, 0.9f, 0.8f, 1);
+            bossHunterDebuff.canStack = false;
+            bossHunterDebuff.isDebuff = true;
+            bossHunterDebuff.name = "TrophyHunterDebuff";
+            bossHunterDebuff.iconSprite = LegacyResourcesAPI.Load<Sprite>("textures/bufficons/texBuffLunarDetonatorIcon");
+
+            buffDefs.Add(bossHunterDebuff);
+
+            bossHunterDebuffWithScalpel = ScriptableObject.CreateInstance<BuffDef>();
+
+            bossHunterDebuffWithScalpel.buffColor = new Color(0.2f, 0.9f, 0.8f, 1);
+            bossHunterDebuffWithScalpel.canStack = false;
+            bossHunterDebuffWithScalpel.isDebuff = true;
+            bossHunterDebuffWithScalpel.name = "TrophyHunterScalpelDebuff";
+            bossHunterDebuffWithScalpel.iconSprite = LegacyResourcesAPI.Load<Sprite>("textures/bufficons/texBuffLunarDetonatorIcon");
+
+            buffDefs.Add(bossHunterDebuffWithScalpel);
         }
 
         private void AddExecutionThreshold(ILContext il)

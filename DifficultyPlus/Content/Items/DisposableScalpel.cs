@@ -26,9 +26,9 @@ namespace DifficultyPlus.Items
 
         public override ItemTier Tier => ItemTier.Tier2;
 
-        public override GameObject ItemModel => Resources.Load<GameObject>("prefabs/NullModel");
+        public override GameObject ItemModel => LegacyResourcesAPI.Load<GameObject>("prefabs/NullModel");
 
-        public override Sprite ItemIcon => Resources.Load<Sprite>("textures/miscicons/texWIPIcon");
+        public override Sprite ItemIcon => LegacyResourcesAPI.Load<Sprite>("textures/miscicons/texWIPIcon");
 
         public override ItemDisplayRuleDict CreateItemDisplayRules()
         {
@@ -45,6 +45,14 @@ namespace DifficultyPlus.Items
             CreateItem();
             CreateLang();
             Hooks();
+        }
+        public static void ConsumeScalpel(CharacterBody attackerBody)
+        {
+            attackerBody.inventory.RemoveItem(DisposableScalpel.instance.ItemsDef);
+            attackerBody.inventory.GiveItem(BrokenScalpel.instance.ItemsDef);
+            CharacterMasterNotificationQueue.PushItemTransformNotification(attackerBody.master,
+                DisposableScalpel.instance.ItemsDef.itemIndex, BrokenScalpel.instance.ItemsDef.itemIndex,
+                CharacterMasterNotificationQueue.TransformationType.Default);
         }
     }
 }

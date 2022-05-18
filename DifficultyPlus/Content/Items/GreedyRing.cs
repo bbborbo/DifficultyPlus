@@ -35,9 +35,9 @@ namespace DifficultyPlus.Items
         public override ItemTier Tier => ItemTier.Tier2;
         public override ItemTag[] ItemTags { get; set; } = new ItemTag[] { ItemTag.Utility };
 
-        public override GameObject ItemModel => Resources.Load<GameObject>("prefabs/NullModel");
+        public override GameObject ItemModel => LegacyResourcesAPI.Load<GameObject>("prefabs/NullModel");
 
-        public override Sprite ItemIcon => Resources.Load<Sprite>("textures/miscicons/texWIPIcon");
+        public override Sprite ItemIcon => LegacyResourcesAPI.Load<Sprite>("textures/miscicons/texWIPIcon");
         public override bool IsHidden => true;
 
         public override ItemDisplayRuleDict CreateItemDisplayRules()
@@ -75,7 +75,7 @@ namespace DifficultyPlus.Items
             greedyRingBuff = ScriptableObject.CreateInstance<BuffDef>();
             {
                 greedyRingBuff.name = "GreedyRingBuff";
-                greedyRingBuff.iconSprite = Resources.Load<Sprite>("texbuffelementalringsreadyicon");
+                greedyRingBuff.iconSprite = LegacyResourcesAPI.Load<Sprite>("texbuffelementalringsreadyicon");
                 greedyRingBuff.buffColor = new Color(0.9f, 0.8f, 0.0f);
                 greedyRingBuff.canStack = false;
                 greedyRingBuff.isDebuff = false;

@@ -30,8 +30,7 @@ namespace DifficultyPlus
 
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     [BepInPlugin(guid, modName, version)]
-    [R2APISubmoduleDependency(nameof(LanguageAPI), nameof(BuffAPI), nameof(PrefabAPI),
-        nameof(EffectAPI), nameof(ResourcesAPI), nameof(DirectorAPI),
+    [R2APISubmoduleDependency(nameof(LanguageAPI), nameof(PrefabAPI), nameof(DirectorAPI),
         nameof(ItemAPI), nameof(RecalculateStatsAPI), nameof(EliteAPI))]
     internal partial class DifficultyPlusPlugin : BaseUnityPlugin
     {
@@ -65,9 +64,17 @@ namespace DifficultyPlus
             InitializeConfig();
             InitializeItems();
             //InitializeEquipment();
-            InitializeEliteEquipment();
-            InitializeScavengers();
+            //InitializeEliteEquipment();
+            //InitializeScavengers();
 
+            RoR2Application.onLoad += InitializeEverything;
+
+            InitializeCoreModules();
+            new ContentPacks().Initialize();
+        }
+
+        private void InitializeEverything()
+        {
             #region difficulty dependent difficulty
             //ambient level
             if (GetConfigBool(true, "Difficulty: Difficulty Dependent Ambient Difficulty Boost"))
@@ -91,7 +98,7 @@ namespace DifficultyPlus
             //monsoon stat boost
             if (GetConfigBool(true, "Difficulty: Monsoon Stat Booster"))
             {
-                MonsoonStatBoost();
+                //MonsoonStatBoost();
             }
             #endregion
 
@@ -102,7 +109,8 @@ namespace DifficultyPlus
             if (GetConfigBool(true, "Boss: Boss Item Drops"))
             {
                 BossesDropBossItems();
-                DirectorAPI.Helpers.RemoveExistingInteractable(DirectorAPI.Helpers.InteractableNames.OvergrownPrinter);
+                TricornRework();
+                DirectorAPI.InteractableActions += DeleteYellowPrinters;
             }
 
             //overloading elite
@@ -158,15 +166,13 @@ namespace DifficultyPlus
             }
             #endregion
 
+
             LanguageAPI.Add("DIFFICULTY_EASY_DESCRIPTION", drizzleDesc + "</style>");
             // " + $"\n>Most Bosses have <style=cIsHealing>reduced skill sets</style>
 
             LanguageAPI.Add("DIFFICULTY_NORMAL_DESCRIPTION", rainstormDesc + "</style>");
 
             LanguageAPI.Add("DIFFICULTY_HARD_DESCRIPTION", monsoonDesc + "</style>");
-
-            InitializeCoreModules();
-            new ContentPacks().Initialize();
         }
 
         private bool GetConfigBool(bool defaultValue, string entryName, string desc = "")

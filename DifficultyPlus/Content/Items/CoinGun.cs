@@ -127,7 +127,7 @@ namespace DifficultyPlus.Items
                         damageInfo.damage *= damageMult;*/
                         if(Util.CheckRoll((damageBoostCount / maxPlatinum) * 100, master))
                         {
-                            EffectManager.SimpleImpactEffect(Resources.Load<GameObject>("Prefabs/Effects/ImpactEffects/CoinImpact"), damageInfo.position, Vector3.up, true);
+                            EffectManager.SimpleImpactEffect(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/ImpactEffects/CoinImpact"), damageInfo.position, Vector3.up, true);
                         }
                     }
                 }
@@ -153,7 +153,7 @@ namespace DifficultyPlus.Items
         }
 
         static string baseName = "CoinGunDamageBoost";
-        static Sprite defaultSprite = Resources.Load<Sprite>("textures/bufficons/texBuffFullCritIcon");
+        static Sprite defaultSprite = LegacyResourcesAPI.Load<Sprite>("textures/bufficons/texBuffFullCritIcon");
         static BuffDef GenerateCoinDamageBuff(ref BuffDef coinBuff, string coinType, Color color, Sprite sprite = null)
         {
             coinBuff = ScriptableObject.CreateInstance<BuffDef>();

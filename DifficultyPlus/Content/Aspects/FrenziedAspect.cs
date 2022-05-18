@@ -25,9 +25,9 @@ namespace DifficultyPlus.Equipment
 
         public override string EliteEquipmentLore => "";
 
-        public override GameObject EliteEquipmentModel => Resources.Load<GameObject>("prefabs/NullModel");
+        public override GameObject EliteEquipmentModel => LegacyResourcesAPI.Load<GameObject>("prefabs/NullModel");
 
-        public override Sprite EliteEquipmentIcon => Resources.Load<Sprite>("textures/miscicons/texWIPIcon");
+        public override Sprite EliteEquipmentIcon => LegacyResourcesAPI.Load<Sprite>("textures/miscicons/texWIPIcon");
 
 
         public override Material EliteOverlayMaterial { get; set; } = DifficultyPlusPlugin.assetBundle.LoadAsset<Material>(DifficultyPlusPlugin.assetsPath + "matFrenzied.mat");
@@ -89,7 +89,7 @@ namespace DifficultyPlus.Equipment
 
         public override void Init(ConfigFile config)
         {
-            /*Material mat = Resources.Load<Material>("materials/matElitePoisonOverlay");
+            /*Material mat = LegacyResourcesAPI.Load<Material>("materials/matElitePoisonOverlay");
             mat.color = Color.yellow;
             EliteMaterial = mat;*/
 

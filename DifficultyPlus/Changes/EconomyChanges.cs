@@ -15,7 +15,7 @@ namespace DifficultyPlus
 {
     internal partial class DifficultyPlusPlugin : BaseUnityPlugin
     {
-        GameObject awu = Resources.Load<GameObject>("prefabs/characterbodies/SuperRoboBallBossBody");
+        GameObject awu = LegacyResourcesAPI.Load<GameObject>("prefabs/characterbodies/SuperRoboBallBossBody");
         CharacterBody awuBody;
         float awuArmor = 40;
         float awuAdditionalArmor = 0;

@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using DifficultyPlus.CoreModules;
 using DifficultyPlus.Items;
 using R2API;
 using RoR2;
@@ -13,14 +14,12 @@ namespace DifficultyPlus
 {
     internal partial class DifficultyPlusPlugin : BaseUnityPlugin
     {
-        public static GameObject overgrownPrinterPrefab = Resources.Load<GameObject>("prefabs/networkedobjects/chest/DuplicatorWild");
+        public static GameObject overgrownPrinterPrefab = LegacyResourcesAPI.Load<GameObject>("prefabs/networkedobjects/chest/DuplicatorWild");
         public static bool affectAurelionite = true;
 
         float baseDropChance = 4;
         float eliteBonusDropChance = 3;
         float specialBonusDropChance = 7;
-
-        public static Dictionary<BodyIndex, ItemDef> BossItemDictionary = new Dictionary<BodyIndex, ItemDef>();
 
         void BossesDropBossItems()
         {
@@ -28,67 +27,14 @@ namespace DifficultyPlus
                 "Enable boss item drop changes for Aurelionite", true,
                 "The boss item drop changes make Aurel drop his item directly and have greens drop from the portal instead. " +
                 "Turn this off if you dont want that.").Value;
-            DirectorAPI.InteractableActions += FuckingDeleteYellowPrinters;
 
-            On.RoR2.BodyCatalog.Init += PopulateBossItemDictionary;
             On.RoR2.BossGroup.Awake += RemoveBossItemDropsFromTeleporter;
-            On.RoR2.GlobalEventManager.OnCharacterDeath += HookOnBodyDeath;
+            On.RoR2.GlobalEventManager.OnCharacterDeath += BossesDropTrophies;
         }
 
-        private void FuckingDeleteYellowPrinters(List<DirectorAPI.DirectorCardHolder> cardList, DirectorAPI.StageInfo stage)
+        private void DeleteYellowPrinters(DccsPool pool, DirectorAPI.StageInfo currentStage)
         {
-            List<DirectorAPI.DirectorCardHolder> removeList = new List<DirectorAPI.DirectorCardHolder>();
-            foreach (DirectorAPI.DirectorCardHolder dc in cardList)
-            {
-                if (dc.InteractableCategory == DirectorAPI.InteractableCategory.Duplicator)
-                {
-                    if(dc.Card.spawnCard.prefab == overgrownPrinterPrefab)
-                    {
-                        dc.Card.selectionWeight = 0;
-                        removeList.Add(dc);
-                    }
-                }
-            }
-            foreach (DirectorAPI.DirectorCardHolder dc in removeList)
-            {
-                cardList.Remove(dc);
-            }
-        }
-
-        private void PopulateBossItemDictionary(On.RoR2.BodyCatalog.orig_Init orig)
-        {
-            orig();
-
-            TryAddBossItem("VagrantBody", RoR2Content.Items.NovaOnLowHealth);
-            TryAddBossItem("TitanBody", RoR2Content.Items.Knurl);
-            TryAddBossItem("BeetleQueen2Body", RoR2Content.Items.BeetleGland);
-            TryAddBossItem("GravekeeperBody", RoR2Content.Items.SprintWisp);
-            TryAddBossItem("MagmaWormBody", RoR2Content.Items.FireballsOnHit);
-            TryAddBossItem("ImpBossBody", RoR2Content.Items.BleedOnHitAndExplode);
-            TryAddBossItem("ClayBossBody", RoR2Content.Items.SiphonOnLowHealth);
-            TryAddBossItem("RoboBallBossBody", RoR2Content.Items.RoboBallBuddy);
-            TryAddBossItem("GrandParentBody", RoR2Content.Items.ParentEgg);
-
-            //TryAddBossItem("ScavBody", RoR2Content.Items.FireballsOnHit);
-            TryAddBossItem("ElectricWormBody", RoR2Content.Items.LightningStrikeOnHit);
-            TryAddBossItem("TitanGoldBody", RoR2Content.Items.TitanGoldDuringTP);
-            TryAddBossItem("SuperRoboBallBossBody", RoR2Content.Items.RoboBallBuddy);
-        }
-
-        private static void TryAddBossItem(string bodyName, ItemDef itemDef)
-        {
-            BodyIndex index = BodyCatalog.FindBodyIndex(bodyName);
-            if(index != BodyIndex.None)
-            {
-                if(itemDef != null)
-                {
-                    BossItemDictionary.Add(index, itemDef);
-                }
-            }
-            else
-            {
-                Debug.Log($"A CharacterBody of the name {bodyName} could not be found!");
-            }
+            DirectorAPI.Helpers.RemoveExistingInteractable(DirectorAPI.Helpers.InteractableNames.PrinterOvergrown3D);
         }
 
         private void RemoveBossItemDropsFromTeleporter(On.RoR2.BossGroup.orig_Awake orig, BossGroup self)
@@ -97,24 +43,24 @@ namespace DifficultyPlus
             self.bossDropChance = 0;
         }
 
-        public void HookOnBodyDeath(On.RoR2.GlobalEventManager.orig_OnCharacterDeath orig, GlobalEventManager self, DamageReport damageReport)
+        public void BossesDropTrophies(On.RoR2.GlobalEventManager.orig_OnCharacterDeath orig, GlobalEventManager self, DamageReport damageReport)
         {
             orig(self, damageReport);
 
             if (damageReport.victimTeamIndex == TeamIndex.Player)
                 return;
 
-            CharacterBody attacker = damageReport.attackerBody;
-            CharacterBody enemy = damageReport.victimBody;
-            BodyIndex enemyBodyIndex = enemy.bodyIndex;
+            CharacterBody attackerBody = damageReport.attackerBody;
+            CharacterBody enemyBody = damageReport.victimBody;
+            BodyIndex enemyBodyIndex = enemyBody.bodyIndex;
 
-            if(enemyBodyIndex == BodyCatalog.FindBodyIndex("TitanGoldBody") &&
-                affectAurelionite)
+            if (enemyBodyIndex == BodyCatalog.FindBodyIndex("TitanGoldBody") &&
+                !affectAurelionite)
             {
                 return;
             }
 
-            if (enemy.healthComponent.alive)
+            if (enemyBody.healthComponent.alive)
             {
                 return;
             }
@@ -126,15 +72,17 @@ namespace DifficultyPlus
 
             int players = Run.instance.participatingPlayerCount;
 
-            if (BossItemDictionary.TryGetValue(enemyBodyIndex, out itemToDrop))
+            DeathRewards deathRewards = GetDeathRewardsFromTarget(enemyBody);
+
+            if (deathRewards != null && deathRewards.bossDropTable)
             {
                 float dropChance = 0;
 
-                if(itemToDrop == RoR2Content.Items.TitanGoldDuringTP)
+                if (enemyBodyIndex == BodyCatalog.FindBodyIndex("TitanGoldBody"))
                 {
                     dropChance = 100;
                 }
-                else if(enemyBodyIndex == BodyCatalog.FindBodyIndex("SuperRoboBallBossBody"))
+                else if (enemyBodyIndex == BodyCatalog.FindBodyIndex("SuperRoboBallBossBody"))
                 {
                     dropChance = specialBonusDropChance;
                 }
@@ -143,34 +91,66 @@ namespace DifficultyPlus
                     dropChance = baseDropChance;
                 }
 
-                if (enemy.isElite || itemToDrop == RoR2Content.Items.LightningStrikeOnHit)
+                if (enemyBody.isElite || enemyBodyIndex == BodyCatalog.FindBodyIndex("ElectricWormBody"))
                 {
                     dropChance += eliteBonusDropChance;
                 }
 
-                bool hasScalpel = false;
-                if (DisposableScalpel.instance.GetCount(attacker) > 0 && dropChance < 100)
+                bool isTricorn = false;
+                bool isScalpel = false;
+                if(enemyBody.HasBuff(Assets.bossHunterDebuff) || enemyBody.HasBuff(Assets.bossHunterDebuffWithScalpel))
                 {
-                    hasScalpel = true;
+                    isTricorn = true;
+                    dropChance += 100;
+                }
+                else if (DisposableScalpel.instance.GetCount(attackerBody) > 0 && dropChance < 100)
+                {
+                    isScalpel = true;
                     dropChance += DisposableScalpel.bonusDropChance;
                 }
 
                 if (Util.CheckRoll(dropChance, killerMaster))
                 {
-                    if (hasScalpel)
+                    if (isScalpel && !isTricorn)
                     {
-                        attacker.inventory.RemoveItem(DisposableScalpel.instance.ItemsDef);
-                        attacker.inventory.GiveItem(BrokenScalpel.instance.ItemsDef);
-                        ReadOnlyCollection<NotificationQueue> readOnlyCollection = NotificationQueue.readOnlyInstancesList;
-                        for (int i = 0; i < readOnlyCollection.Count; i++)
-                        {
-                            readOnlyCollection[i].OnPickup(attacker.master, PickupCatalog.FindPickupIndex(BrokenScalpel.instance.ItemsDef.itemIndex));
-                        }
+                        DisposableScalpel.ConsumeScalpel(attackerBody);
                     }
 
-                    PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(itemToDrop.itemIndex), enemy.transform.position, Vector3.up * 20f);
+                    Vector3 vector = enemyBody ? enemyBody.corePosition : Vector3.zero;
+                    Vector3 normalized = (vector - attackerBody.corePosition).normalized;
+
+                    PickupDropletController.CreatePickupDroplet(
+                        deathRewards.bossDropTable.GenerateDrop(attackerBody.equipmentSlot.rng), 
+                        vector, normalized * 15f);
                 }
             }
+        }
+
+
+        public static DeathRewards GetDeathRewardsFromTarget(HurtBox hurtBox)
+        {
+            DeathRewards deathRewards = null;
+            if (hurtBox != null)
+            {
+                HealthComponent healthComponent = hurtBox.healthComponent;
+                if (healthComponent != null)
+                {
+                    deathRewards = GetDeathRewardsFromTarget(healthComponent.body);
+                }
+            }
+            return deathRewards;
+        }
+        public static DeathRewards GetDeathRewardsFromTarget(CharacterBody enemyBody)
+        {
+            DeathRewards deathRewards = null;
+
+            if (enemyBody != null)
+            {
+                GameObject gameObject = enemyBody.gameObject;
+                deathRewards = ((gameObject != null) ? gameObject.GetComponent<DeathRewards>() : null);
+            }
+
+            return deathRewards;
         }
     }
 }

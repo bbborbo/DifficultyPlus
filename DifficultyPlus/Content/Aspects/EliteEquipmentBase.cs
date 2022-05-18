@@ -176,7 +176,7 @@ namespace DifficultyPlus.Equipment
             EliteBuffDef.eliteDef = EliteDef;
 
 
-            BuffAPI.Add(new CustomBuff(EliteBuffDef));
+            Assets.buffDefs.Add(EliteBuffDef);
             ItemAPI.Add(new CustomEquipment(EliteEquipmentDef, CreateItemDisplayRules()));
             //EliteAPI.Add(new CustomElite(EliteDef, CanAppearInEliteTiers));
             Assets.eliteDefs.Add(EliteDef);

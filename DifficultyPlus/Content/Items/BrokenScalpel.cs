@@ -22,9 +22,9 @@ namespace DifficultyPlus.Items
 
         public override ItemTier Tier => ItemTier.NoTier;
 
-        public override GameObject ItemModel => Resources.Load<GameObject>("prefabs/NullModel");
+        public override GameObject ItemModel => LegacyResourcesAPI.Load<GameObject>("prefabs/NullModel");
 
-        public override Sprite ItemIcon => Resources.Load<Sprite>("textures/miscicons/texWIPIcon");
+        public override Sprite ItemIcon => LegacyResourcesAPI.Load<Sprite>("textures/miscicons/texWIPIcon");
 
         public override ItemDisplayRuleDict CreateItemDisplayRules()
         {

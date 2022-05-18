@@ -5,6 +5,7 @@ using RoR2;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace DifficultyPlus.Items
 {
@@ -64,6 +65,11 @@ namespace DifficultyPlus.Items
             {
                 ItemTags = new List<ItemTag>(ItemTags) { ItemTag.AIBlacklist }.ToArray();
             }
+
+            string tierNameString = Tier.ToString();
+            if (!tierNameString.Contains("Tier"))
+                tierNameString += "Tier";
+
             ItemsDef = ScriptableObject.CreateInstance<ItemDef>();//new RoR2.ItemDef()
             {
                 ItemsDef.name = "ITEM_" + ItemLangTokenName;
@@ -73,7 +79,8 @@ namespace DifficultyPlus.Items
                 ItemsDef.loreToken = "ITEM_" + ItemLangTokenName + "_LORE";
                 ItemsDef.pickupModelPrefab = ItemModel;
                 ItemsDef.pickupIconSprite = ItemIcon;
-                ItemsDef.tier = Tier;
+                if (Tier != ItemTier.NoTier)
+                    ItemsDef._itemTierDef = Addressables.LoadAssetAsync<ItemTierDef>($"RoR2/Base/Common/{tierNameString}Def.asset").WaitForCompletion();
             }
             if (ItemTags.Length > 0) { ItemsDef.tags = ItemTags; }
 

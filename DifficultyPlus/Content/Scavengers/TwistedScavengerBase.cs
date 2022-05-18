@@ -24,7 +24,7 @@ namespace DifficultyPlus.Scavengers
     public abstract class TwistedScavengerBase
     {
         public static string baseTscavTokenName = "BorboTScav";
-        MultiCharacterSpawnCard twistedScavengerSpawnCard = Resources.Load<MultiCharacterSpawnCard>("SpawnCards/CharacterSpawnCards/cscScavLunar");
+        MultiCharacterSpawnCard twistedScavengerSpawnCard = LegacyResourcesAPI.Load<MultiCharacterSpawnCard>("SpawnCards/CharacterSpawnCards/cscScavLunar");
 
         public abstract string ScavName { get; }
         public abstract string ScavTitle { get; }
@@ -58,8 +58,8 @@ namespace DifficultyPlus.Scavengers
             string nameToken = baseTscavTokenName + ScavLangTokenName;
             LanguageAPI.Add(nameToken, fullName);
 
-            GameObject masterObject = Resources.Load<GameObject>("prefabs/charactermasters/ScavLunar1Master").InstantiateClone($"{nameToken}Master", true);
-            GameObject bodyObject = Resources.Load<GameObject>("prefabs/characterbodies/ScavLunar1Body").InstantiateClone($"{nameToken}Body", true);
+            GameObject masterObject = LegacyResourcesAPI.Load<GameObject>("prefabs/charactermasters/ScavLunar1Master").InstantiateClone($"{nameToken}Master", true);
+            GameObject bodyObject = LegacyResourcesAPI.Load<GameObject>("prefabs/characterbodies/ScavLunar1Body").InstantiateClone($"{nameToken}Body", true);
 
             CharacterMaster master = masterObject.GetComponent<CharacterMaster>();
             master.bodyPrefab = bodyObject;

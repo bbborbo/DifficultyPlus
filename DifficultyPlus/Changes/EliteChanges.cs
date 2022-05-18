@@ -13,6 +13,9 @@ namespace DifficultyPlus
 {
     internal partial class DifficultyPlusPlugin : BaseUnityPlugin
     {
+        float softEliteHealthBoostCoefficient = 2f; //3
+        float baseEliteHealthBoostCoefficient = 3f; //4
+        float baseEliteDamageBoostCoefficient = 1.5f; //2
         public static float overloadingBombDamage = 1.5f; //0.5f
 
         public static int Tier2EliteMinimumStageDefault = 5;
@@ -34,8 +37,7 @@ namespace DifficultyPlus
                 monsoonDesc += $"\n>{Tier2EliteName} Elites appear starting on <style=cIsHealth>Stage {Tier2EliteMinimumStageMonsoon + 1}</style>";
             }
 
-            CombatDirector.baseEliteHealthBoostCoefficient = 3f; //4
-            CombatDirector.baseEliteDamageBoostCoefficient = 1.5f; //2
+
             On.RoR2.CombatDirector.Init += EliteTierChanges;
         }
 
@@ -43,14 +45,37 @@ namespace DifficultyPlus
         {
             orig();
 
+            RoR2Content.Elites.Fire.damageBoostCoefficient = baseEliteDamageBoostCoefficient;
+            RoR2Content.Elites.Fire.healthBoostCoefficient = baseEliteHealthBoostCoefficient;
+            RoR2Content.Elites.FireHonor.damageBoostCoefficient = baseEliteDamageBoostCoefficient;
+            RoR2Content.Elites.FireHonor.healthBoostCoefficient = baseEliteHealthBoostCoefficient / 2;
+
+            RoR2Content.Elites.Ice.damageBoostCoefficient = baseEliteDamageBoostCoefficient;
+            RoR2Content.Elites.Ice.healthBoostCoefficient = baseEliteHealthBoostCoefficient;
+            RoR2Content.Elites.IceHonor.damageBoostCoefficient = baseEliteDamageBoostCoefficient;
+            RoR2Content.Elites.IceHonor.healthBoostCoefficient = baseEliteHealthBoostCoefficient / 2;
+
+            RoR2Content.Elites.Lightning.damageBoostCoefficient = baseEliteDamageBoostCoefficient;
+            RoR2Content.Elites.Lightning.healthBoostCoefficient = baseEliteHealthBoostCoefficient;
+            RoR2Content.Elites.LightningHonor.damageBoostCoefficient = baseEliteDamageBoostCoefficient;
+            RoR2Content.Elites.LightningHonor.healthBoostCoefficient = baseEliteHealthBoostCoefficient / 2;
+
+            DLC1Content.Elites.Earth.damageBoostCoefficient = baseEliteDamageBoostCoefficient;
+            DLC1Content.Elites.Earth.healthBoostCoefficient = softEliteHealthBoostCoefficient;
+            DLC1Content.Elites.EarthHonor.damageBoostCoefficient = baseEliteDamageBoostCoefficient;
+            DLC1Content.Elites.EarthHonor.healthBoostCoefficient = softEliteHealthBoostCoefficient / 2;
+
             foreach(CombatDirector.EliteTierDef etd in CombatDirector.eliteTiers)
             {
                 EliteDef[] eliteTypes = new EliteDef[] { RoR2Content.Elites.Poison, RoR2Content.Elites.Haunted };
 
                 if (etd.eliteTypes == eliteTypes)
                 {
-                    etd.healthBoostCoefficient = Mathf.Pow(CombatDirector.baseEliteHealthBoostCoefficient, 2); //18
-                    etd.damageBoostCoefficient = 4.5f; //6
+                    foreach(EliteDef elite in etd.eliteTypes)
+                    {
+                        elite.healthBoostCoefficient = Mathf.Pow(baseEliteHealthBoostCoefficient, 2); //18
+                        elite.damageBoostCoefficient = 4.5f; //6
+                    }
 
                     etd.isAvailable = (SpawnCard.EliteRules rules) =>
                     (Run.instance.stageClearCount > Tier2EliteMinimumStageDrizzle && rules == SpawnCard.EliteRules.Default && Run.instance.selectedDifficulty <= DifficultyIndex.Easy)
@@ -69,7 +94,7 @@ namespace DifficultyPlus
         private void OverloadingEliteChanges()
         {
             //Debug.Log("Modifying Overloading Elite bombs!");
-            GameObject overloadingBomb = Resources.Load<GameObject>("Prefabs/Projectiles/LightningStake");
+            GameObject overloadingBomb = LegacyResourcesAPI.Load<GameObject>("Prefabs/Projectiles/LightningStake");
 
             ProjectileStickOnImpact bombStick = overloadingBomb.GetComponent<ProjectileStickOnImpact>();
             bombStick.ignoreCharacters = true;

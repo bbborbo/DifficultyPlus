@@ -28,9 +28,9 @@ namespace DifficultyPlus.Equipment
 
         public override string EliteModifier => "Volatile";
 
-        public override GameObject EliteEquipmentModel => Resources.Load<GameObject>("prefabs/NullModel");
+        public override GameObject EliteEquipmentModel => LegacyResourcesAPI.Load<GameObject>("prefabs/NullModel");
 
-        public override Sprite EliteEquipmentIcon => Resources.Load<Sprite>("textures/miscicons/texWIPIcon");
+        public override Sprite EliteEquipmentIcon => LegacyResourcesAPI.Load<Sprite>("textures/miscicons/texWIPIcon");
 
         public override Material EliteOverlayMaterial { get; set; } = DifficultyPlusPlugin.assetBundle.LoadAsset<Material>(DifficultyPlusPlugin.assetsPath + "matVolatile.mat");
         public override string EliteRampTextureName { get; set; } = "texRampVolatile";
@@ -166,7 +166,7 @@ namespace DifficultyPlus.Equipment
                             float radius = 4 * damageInfo.procCoefficient;
                             float damageCoefficient = 0.4f;
                             float baseDamage = Util.OnHitProcDamage(damageInfo.damage, aBody.damage, damageCoefficient);
-                            EffectManager.SpawnEffect(Resources.Load<GameObject>("Prefabs/Effects/OmniEffect/OmniExplosionVFXQuick"), new EffectData
+                            EffectManager.SpawnEffect(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/OmniEffect/OmniExplosionVFXQuick"), new EffectData
                             {
                                 origin = damageInfo.position,
                                 scale = radius,
@@ -209,8 +209,8 @@ namespace DifficultyPlus.Equipment
 
         private void CreateProjectile()
         {
-            GameObject projectilePrefab = Resources.Load<GameObject>("prefabs/projectiles/ToolbotGrenadeLauncherProjectile").InstantiateClone("borboVolatileMortar", true);
-            GameObject projectileGhost = Resources.Load<GameObject>("prefabs/projectileghosts/ToolbotGrenadeGhost").InstantiateClone("borboVolatileMortarGhost", false);
+            GameObject projectilePrefab = LegacyResourcesAPI.Load<GameObject>("prefabs/projectiles/ToolbotGrenadeLauncherProjectile").InstantiateClone("borboVolatileMortar", true);
+            GameObject projectileGhost = LegacyResourcesAPI.Load<GameObject>("prefabs/projectileghosts/ToolbotGrenadeGhost").InstantiateClone("borboVolatileMortarGhost", false);
             projectilePrefab.transform.localScale = Vector3.one * 0.2f;
 
             ProjectileController pc = projectilePrefab.GetComponent<ProjectileController>();

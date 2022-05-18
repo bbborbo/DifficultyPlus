@@ -36,15 +36,15 @@ namespace DifficultyPlus.Equipment
 
         public override string EliteModifier => "Serpentine";
 
-        public override GameObject EliteEquipmentModel => Resources.Load<GameObject>("prefabs/NullModel");
+        public override GameObject EliteEquipmentModel => LegacyResourcesAPI.Load<GameObject>("prefabs/NullModel");
 
-        public override Sprite EliteEquipmentIcon => Resources.Load<Sprite>("textures/miscicons/texWIPIcon");
+        public override Sprite EliteEquipmentIcon => LegacyResourcesAPI.Load<Sprite>("textures/miscicons/texWIPIcon");
 
 
         public override Sprite EliteBuffIcon => RoR2Content.Equipment.AffixHaunted.passiveBuffDef.iconSprite;
         public override Color EliteBuffColor => Color.magenta;
 
-        //public override Material EliteOverlayMaterial { get; set; } = Resources.Load<Material>("materials/matElitePoisonOverlay");
+        //public override Material EliteOverlayMaterial { get; set; } = LegacyResourcesAPI.Load<Material>("materials/matElitePoisonOverlay");
         public override Material EliteOverlayMaterial { get; set; } = DifficultyPlusPlugin.assetBundle.LoadAsset<Material>(DifficultyPlusPlugin.assetsPath + "matLeeching.mat");
         public override string EliteRampTextureName { get; set; } = "texRampLeeching";
         public override EliteTiers EliteTier { get; set; } = EliteTiers.Tier2;
@@ -75,7 +75,7 @@ namespace DifficultyPlus.Equipment
 
         public override void Init(ConfigFile config)
         {
-            /*Material mat = Resources.Load<Material>("materials/matEliteHauntedOverlay");
+            /*Material mat = LegacyResourcesAPI.Load<Material>("materials/matEliteHauntedOverlay");
             mat.color = Color.magenta;
             EliteMaterial = mat;*/
 
@@ -90,7 +90,7 @@ namespace DifficultyPlus.Equipment
 
         private void CreatePulsePrefab()
         {
-            pulsePrefab = Resources.Load<GameObject>("prefabs/networkedobjects/teleporterhealnovapulse").InstantiateClone("LeechingHealNovaPulse", true);
+            pulsePrefab = LegacyResourcesAPI.Load<GameObject>("prefabs/networkedobjects/teleporterhealnovapulse").InstantiateClone("LeechingHealNovaPulse", true);
             LeechingHealingPulseComponent LHP = pulsePrefab.AddComponent<LeechingHealingPulseComponent>();
             Assets.entityStates.Add(typeof(LeechingHealNovaPulse));
 
@@ -252,7 +252,7 @@ namespace DifficultyPlus.Equipment
             {
                 if (flag)
                 {
-                    affixLeechingWard = Instantiate<GameObject>(Resources.Load<GameObject>("Prefabs/NetworkedObjects/NearbyDamageBonusIndicator"), body.transform);
+                    affixLeechingWard = Instantiate<GameObject>(LegacyResourcesAPI.Load<GameObject>("Prefabs/NetworkedObjects/NearbyDamageBonusIndicator"), body.transform);
                     affixLeechingWard.GetComponent<NetworkedBodyAttachment>().AttachToGameObjectAndSpawn(base.gameObject);
                     affixLeechingWard.transform.Find("Radius, Spherical").localScale = Vector3.one * (LeechingHealNovaPulse.baseRadius + body.radius) * scaleMultiplier;
                     return;

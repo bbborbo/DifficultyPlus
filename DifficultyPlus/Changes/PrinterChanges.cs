@@ -6,127 +6,112 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using R2API.Utils;
+using RoR2;
+using System.Linq;
 
 namespace DifficultyPlus
 {
     internal partial class DifficultyPlusPlugin : BaseUnityPlugin
     {
-        public static GameObject whitePrinter = Resources.Load<GameObject>("prefabs/networkedobjects/chest/Duplicator");
-        public static GameObject greenPrinter = Resources.Load<GameObject>("prefabs/networkedobjects/chest/DuplicatorLarge");
-        public static GameObject redPrinter = Resources.Load<GameObject>("prefabs/networkedobjects/chest/DuplicatorMilitary");
-        public static GameObject scrapper = Resources.Load<GameObject>("prefabs/networkedobjects/chest/Scrapper");
+        public static GameObject whitePrinter = LegacyResourcesAPI.Load<GameObject>("prefabs/networkedobjects/chest/Duplicator");
+        public static GameObject greenPrinter = LegacyResourcesAPI.Load<GameObject>("prefabs/networkedobjects/chest/DuplicatorLarge");
+        public static GameObject redPrinter = LegacyResourcesAPI.Load<GameObject>("prefabs/networkedobjects/chest/DuplicatorMilitary");
+        public static GameObject scrapper = LegacyResourcesAPI.Load<GameObject>("prefabs/networkedobjects/chest/Scrapper");
 
-        private void EquipBarrelOccurrenceHook(List<DirectorCardHolder> cardList, StageInfo currentStage)
+        public static void ChangeInteractableWeightForPool(string interactableNameLowered, int newWeight, DccsPool pool)
         {
-            DirectorCardHolder equipBarrel = cardList.Find((card) => card.Card.spawnCard.name.ToLower() == DirectorAPI.Helpers.InteractableNames.EquipmentBarrel.ToLower());
-            if (equipBarrel != null)
+            Helpers.ForEachPoolEntryInDccsPool(pool, (poolEntry) =>
             {
-                if (IsStageOne(currentStage.stage))
+                for (int i = 0; i < poolEntry.dccs.categories.Length; i++)
                 {
-                    equipBarrel.Card.selectionWeight = 6;//2
+                    var cards = poolEntry.dccs.categories[i].cards.ToList();
+                    foreach(DirectorCard card in cards)
+                    {
+                        if (card.spawnCard.name.ToLowerInvariant() == interactableNameLowered)
+                            card.selectionWeight = newWeight;
+                    }
+                    poolEntry.dccs.categories[i].cards = cards.ToArray();
                 }
-                else if (!currentStage.CheckStage(Stage.Custom, ""))
-                {
-                    equipBarrel.Card.selectionWeight = 2;//2
-                }
+            });
+        }
+
+        private void EquipBarrelOccurrenceHook(DccsPool pool, StageInfo currentStage)
+        {
+            string barrelName = DirectorAPI.Helpers.InteractableNames.EquipmentBarrel.ToLower();
+            if (IsStageOne(currentStage.stage))
+            {
+                ChangeInteractableWeightForPool(barrelName, 6 /*2*/, pool);
+            }
+            else if (!currentStage.CheckStage(DirectorAPI.Stage.Custom, ""))
+            {
+                ChangeInteractableWeightForPool(barrelName, 2 /*2*/, pool);
             }
 
-            DirectorCardHolder equipShop = cardList.Find((card) => card.Card.spawnCard.name.ToLower() == "iscTripleShopEquipment".ToLower());
-            if(equipShop != null)
+            string shopName = DirectorAPI.Helpers.InteractableNames.TripleShopEquipment.ToLower();
+            if (IsStageThree(currentStage.stage))
             {
-                if (IsStageThree(currentStage.stage))
-                {
-                    equipShop.Card.selectionWeight = 10;//2
-                }
-                else if (!currentStage.CheckStage(Stage.Custom, ""))
-                {
-                    equipShop.Card.selectionWeight = 2;//2
-                }
+                ChangeInteractableWeightForPool(shopName, 10 /*2*/, pool);
+            }
+            else if (!currentStage.CheckStage(DirectorAPI.Stage.Custom, ""))
+            {
+                ChangeInteractableWeightForPool(shopName, 2 /*2*/, pool);
             }
         }
-        private void ScrapperOccurrenceHook(List<DirectorAPI.DirectorCardHolder> cardList, DirectorAPI.StageInfo currentStage)
+        private void ScrapperOccurrenceHook(DccsPool pool, DirectorAPI.StageInfo currentStage)
         {
+            string scrapperName = DirectorAPI.Helpers.InteractableNames.Scrapper.ToLower();
             if (OnScrapperStage(currentStage.stage))
             {
-                DirectorCardHolder scrapper = cardList.Find((card) => IsScrapper(card));
-                if (scrapper != null)
-                {
-                    scrapper.Card.selectionWeight = 25;//12
-                }
+                ChangeInteractableWeightForPool(scrapperName, 25 /*12*/, pool);
             }
-            else if (!currentStage.CheckStage(Stage.Custom, ""))
+            else if (!currentStage.CheckStage(DirectorAPI.Stage.Custom, ""))
             {
-                cardList.RemoveAll((card) => IsScrapper(card));
+                DirectorAPI.Helpers.RemoveExistingInteractable(scrapperName);
             }
         }
-        private void PrinterOccurrenceHook(List<DirectorAPI.DirectorCardHolder> cardList, DirectorAPI.StageInfo currentStage)
+        private void PrinterOccurrenceHook(DccsPool pool, DirectorAPI.StageInfo currentStage)
         {
+            string printerWhite = DirectorAPI.Helpers.InteractableNames.Printer3D.ToLower();
+            string printerGreen = DirectorAPI.Helpers.InteractableNames.Printer3DLarge.ToLower();
+            string printerRed = DirectorAPI.Helpers.InteractableNames.PrinterMiliTech.ToLower();
+
             if (OnPrinterStage(currentStage.stage))
             {
-                List<DirectorCardHolder> printers = cardList.FindAll((card) => IsPrinter(card));
-
-                foreach (DirectorAPI.DirectorCardHolder dc in cardList)
-                {
-                    GameObject cardPrefab = dc.Card.spawnCard.prefab;
-                    if (dc.Card.selectionWeight != 0)
-                    {
-                        if (cardPrefab == greenPrinter)
-                        {
-                            dc.Card.selectionWeight = 10; //6
-                        }
-                        if (cardPrefab == redPrinter)
-                        {
-                            if (currentStage.stage == Stage.SkyMeadow)
-                            {
-                                dc.Card.selectionWeight = 12; //1
-                            }
-                            else
-                            {
-                                dc.Card.selectionWeight = 3; //1
-                            }
-                        }
-                    }
-                }
+                //ChangeInteractableWeightForPool(printerWhite, 12 /*idk what it is in vanilla*/, pool);
+                ChangeInteractableWeightForPool(printerGreen, 10 /*6*/, pool);
+                ChangeInteractableWeightForPool(printerRed, (currentStage.stage == DirectorAPI.Stage.SkyMeadow) ? 12 : 3 /*1*/, pool);
             }
-            else if (!currentStage.CheckStage(Stage.Custom, ""))
+            else if (!currentStage.CheckStage(DirectorAPI.Stage.Custom, ""))
             {
-                cardList.RemoveAll((card) => IsPrinter(card));
+                DirectorAPI.Helpers.RemoveExistingInteractable(printerWhite);
+                DirectorAPI.Helpers.RemoveExistingInteractable(printerGreen);
+                DirectorAPI.Helpers.RemoveExistingInteractable(printerRed);
             }
         }
 
         #region bools
-        private bool IsPrinter(DirectorCardHolder card)
-        {
-            string cardName = card.Card.spawnCard.name.ToLower();
-            return cardName == DirectorAPI.Helpers.InteractableNames.PrinterCommon.ToLower()
-                || cardName == DirectorAPI.Helpers.InteractableNames.PrinterUncommon.ToLower()
-                || cardName == DirectorAPI.Helpers.InteractableNames.PrinterLegendary.ToLower();
-        }
-        private bool IsScrapper(DirectorCardHolder card)
-        {
-            string cardName = card.Card.spawnCard.name.ToLower();
-            return cardName == "iscScrapper".ToLower();
-        }
-        private bool OnPrinterStage(Stage stage)
+        private bool OnPrinterStage(DirectorAPI.Stage stage)
         {
             return !OnScrapperStage(stage);
         }
-        private bool OnScrapperStage(Stage stage)
+        private bool OnScrapperStage(DirectorAPI.Stage stage)
         {
             return IsStageOne(stage)
                 || IsStageThree(stage);
         }
 
-        private bool IsStageOne(Stage stage)
+        private bool IsStageOne(DirectorAPI.Stage stage)
         {
-            return stage == Stage.TitanicPlains
-                || stage == Stage.DistantRoost;
+            return stage == DirectorAPI.Stage.TitanicPlains
+                || stage == DirectorAPI.Stage.DistantRoost
+                || stage == DirectorAPI.Stage.SiphonedForest;
         }
 
-        private bool IsStageThree(Stage stage)
+        private bool IsStageThree(DirectorAPI.Stage stage)
         {
-            return stage == Stage.RallypointDelta
-                || stage == Stage.ScorchedAcres;
+            return stage == DirectorAPI.Stage.RallypointDelta
+                || stage == DirectorAPI.Stage.ScorchedAcres
+                || stage == DirectorAPI.Stage.SulfurPools;
         }
         #endregion
     }

@@ -15,7 +15,7 @@ namespace DifficultyPlus.Items
     {
         public static BuffDef mochaBuffActive;
         public static BuffDef mochaBuffInactive;
-        public static Sprite mochaCustomSprite = Resources.Load<Sprite>("textures/bufficons/texmovespeedbufficon");
+        public static Sprite mochaCustomSprite = LegacyResourcesAPI.Load<Sprite>("textures/bufficons/texmovespeedbufficon");
 
         public static int buffDuration = 90;
 
@@ -41,9 +41,9 @@ namespace DifficultyPlus.Items
         public override ItemTier Tier => ItemTier.Tier1;
         public override ItemTag[] ItemTags { get; set; } = new ItemTag[] { ItemTag.Utility };
 
-        public override GameObject ItemModel => Resources.Load<GameObject>("prefabs/NullModel");
+        public override GameObject ItemModel => LegacyResourcesAPI.Load<GameObject>("prefabs/NullModel");
 
-        public override Sprite ItemIcon => Resources.Load<Sprite>("textures/miscicons/texWIPIcon");
+        public override Sprite ItemIcon => LegacyResourcesAPI.Load<Sprite>("textures/miscicons/texWIPIcon");
 
         public override ItemDisplayRuleDict CreateItemDisplayRules()
         {
