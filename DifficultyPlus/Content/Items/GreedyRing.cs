@@ -64,6 +64,7 @@ namespace DifficultyPlus.Items
 
         public override void Init(ConfigFile config)
         {
+            return;
             CreateItem();
             CreateLang();
             CreateBuff();

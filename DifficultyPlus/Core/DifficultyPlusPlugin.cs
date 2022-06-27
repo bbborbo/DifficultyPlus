@@ -360,5 +360,56 @@ namespace DifficultyPlus
              return itemEnabled;
          }*/
         #endregion
+
+        #region modify items and equips
+        static public void RetierItem(string itemName, ItemTier tier = ItemTier.NoTier)
+        {
+            ItemDef def = LoadItemDef(itemName);
+            if (def != null)
+            {
+                def.tier = tier;
+                def.deprecatedTier = tier;
+            }
+        }
+        public static void RemoveEquipment(string equipName)
+        {
+            EquipmentDef equipDef = LoadEquipDef(equipName);
+            equipDef.canDrop = false;
+            equipDef.canBeRandomlyTriggered = false;
+            equipDef.enigmaCompatible = false;
+            equipDef.dropOnDeathChance = 0;
+        }
+        public static void ChangeEquipmentEnigma(string equipName, bool canEnigma)
+        {
+            EquipmentDef equipDef = LoadEquipDef(equipName);
+            if (equipDef != null)
+            {
+                equipDef.enigmaCompatible = canEnigma;
+            }
+        }
+        public static void ChangeBuffStacking(string buffName, bool canStack)
+        {
+            BuffDef buffDef = LoadBuffDef(buffName);
+            if (buffDef != null)
+            {
+                buffDef.canStack = canStack;
+            }
+        }
+        static ItemDef LoadItemDef(string name)
+        {
+            ItemDef itemDef = LegacyResourcesAPI.Load<ItemDef>("ItemDefs/" + name);
+            return itemDef;
+        }
+        static EquipmentDef LoadEquipDef(string name)
+        {
+            EquipmentDef equipDef = LegacyResourcesAPI.Load<EquipmentDef>("EquipmentDefs/" + name);
+            return equipDef;
+        }
+        static BuffDef LoadBuffDef(string name)
+        {
+            BuffDef buffDef = LegacyResourcesAPI.Load<BuffDef>("BuffDefs/" + name);
+            return buffDef;
+        }
+        #endregion
     }
 }

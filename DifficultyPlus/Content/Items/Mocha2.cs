@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Networking;
 using static R2API.RecalculateStatsAPI;
 
@@ -15,28 +16,37 @@ namespace DifficultyPlus.Items
     {
         public static BuffDef mochaBuffActive;
         public static BuffDef mochaBuffInactive;
-        public static Sprite mochaCustomSprite = LegacyResourcesAPI.Load<Sprite>("textures/bufficons/texmovespeedbufficon");
+        public static Sprite mochaCustomSprite = Addressables.LoadAssetAsync<Sprite>("RoR2/Base/Common/texMovespeedBuffIcon.png").WaitForCompletion(); //LegacyResourcesAPI.Load<Sprite>("textures/bufficons/texmovespeedbufficon");
 
-        public static int buffDuration = 90;
+        public static int stageDuration = 80;
+        public static int pickupDuration = 20;
 
         public static float aspdBoostBase = 0.20f;
         public static float aspdBoostStack = 0.0f;
         public static float mspdBoostBase = 0.25f;
         public static float mspdBoostStack = 0.25f;
-        public override string ItemName => "Mocha";
+        public override string ItemName => "Morning Mocha";
 
-        public override string ItemLangTokenName => "BORBOREWORKEDCOFFEELOL";
+        public override string ItemLangTokenName => "BORBOCOFFEE";
 
         public override string ItemPickupDesc => "Gain a temporary speed boost after beginning a stage.";
 
-        public override string ItemFullDescription => $"After entering any stage, increase " +
+        public override string ItemFullDescription => $"For <style=cIsUtility>{stageDuration}</style> seconds after entering any stage, " +
+            $"or <style=cIsUtility>{pickupDuration}</style> seconds after picking up a new copy of the item, increase " +
             $"<style=cIsDamage>attack speed</style> by <style=cIsDamage>{Tools.ConvertDecimal(aspdBoostBase)}</style> and " +
             $"<style=cIsDamage>movement speed</style> by <style=cIsDamage>{Tools.ConvertDecimal(mspdBoostBase)}</style> " +
             $"<style=cStack>(+{Tools.ConvertDecimal(mspdBoostStack)} per stack)</style>, " +
-            $"and reduce <style=cIsUtility>skill cooldowns</style> by <style=cIsUtility>{Tools.ConvertDecimal(aspdBoostBase)}</style>. " +
-            $"Lasts <style=cIsUtility>{buffDuration}</style> seconds.";
+            $"and reduce <style=cIsUtility>skill cooldowns</style> by <style=cIsUtility>{Tools.ConvertDecimal(aspdBoostBase)}</style>.";
 
-        public override string ItemLore => "This is Hopoo's job!";
+        public override string ItemLore => "Order: To-Go Coffee Cup, 16 ounces" +
+            "\r\nTracking Number: 32******" +
+            "\\r\nEstimated Delivery: 05/04/2058" +
+            "\r\nShipping Method:  Standard" +
+            "\r\nShipping Address: Museum of Natural History, Ninten Island, Earth" +
+            "\r\nShipping Details:" +
+            "\nMy finest brew. Hope it doesn't spoil during transit. " +
+            "Remember to heat it back up to 176.23 degrees... that's when it's freshest. " +
+            "See you soon... Coo.";
 
         public override ItemTier Tier => ItemTier.Tier1;
         public override ItemTag[] ItemTags { get; set; } = new ItemTag[] { ItemTag.Utility };
@@ -52,6 +62,7 @@ namespace DifficultyPlus.Items
 
         public override void Hooks()
         {
+            DifficultyPlusPlugin.RetierItem(nameof(DLC1Content.Items.AttackSpeedAndMoveSpeed));
             On.RoR2.CharacterBody.OnInventoryChanged += AddItemBehavior;
             On.RoR2.CharacterBody.OnBuffFinalStackLost += MochaExpiredBuff;
             On.RoR2.CharacterBody.RecalculateStats += MochaCDR;
@@ -69,12 +80,16 @@ namespace DifficultyPlus.Items
 
         private void AddItemBehavior(On.RoR2.CharacterBody.orig_OnInventoryChanged orig, RoR2.CharacterBody self)
         {
+            int oldItemCount = GetCount(self);
             orig(self);
             if (NetworkServer.active)
             {
                 if (self.master)
                 {
-                    BorboMochaBehavior mochaBehavior = self.AddItemBehavior<BorboMochaBehavior>(GetCount(self));
+                    int itemCount = GetCount(self);
+                    BorboMochaBehavior mochaBehavior = self.AddItemBehavior<BorboMochaBehavior>(itemCount);
+                    if(mochaBehavior && oldItemCount < itemCount)
+                        mochaBehavior.SetMochaBuff(30);
                 }
             }
         }
@@ -159,14 +174,22 @@ namespace DifficultyPlus.Items
 
         private void Start()
         {
-            remainingTime = Mocha2.buffDuration;
-
-            float startingBuffCount = Mocha2.buffDuration / durationPerBuff;
-            for (int i = 0; i < startingBuffCount; i++)
-                AddMochaBuff((i + 1) * durationPerBuff);
+            remainingTime = Mocha2.stageDuration;
+            SetMochaBuff(Mocha2.stageDuration);
         }
 
-        public void AddMochaBuff(float duration)
+        public void SetMochaBuff(int targetCount)
+        {
+            int currentBuffCount = body.GetBuffCount(Mocha2.mochaBuffActive);
+            float startingBuffCount = targetCount / durationPerBuff;
+            if(startingBuffCount > currentBuffCount)
+            {
+                for (int i = currentBuffCount; i < startingBuffCount; i++)
+                    AddMochaBuff((i + 1) * durationPerBuff);
+            }
+        }
+
+        private void AddMochaBuff(float duration)
         {
             body.AddTimedBuff(Mocha2.mochaBuffActive, duration);
         }
